@@ -1,0 +1,177 @@
+openapi: 3.0.3
+info:
+  title: Orgmanager service REST endpoints
+  description: Orgmanager service REST endpoints for SOA first lab
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:335159/api/v1'
+paths:
+  /orgmanager/hire/{id}:
+    post:
+      summary: Add a new employee to the organization with the specified id
+      operationId: addEmployeeToOrganization
+      tags:
+        - Orgmanager
+      parameters:
+        - name: id
+          in: path
+          description: Id of the organization to which we are adding a new employee
+          required: true
+          schema:
+            type: integer
+            format: int64
+            nullable: false
+            minimum: 1
+            example: 1
+      responses:
+        '204':
+          description: Succesfully adding new employee to organization
+        '400':
+          description: Invalid param supplied
+          content:
+            applicaiton/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid param supplied
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '404':
+          description: Not found organization by param id error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 404
+                  message:
+                    type: string
+                    example: Not found organization by id error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 500
+                  message:
+                    type: string
+                    example: Internal server error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error code, message and time case of error
+          content:
+            application/json:
+              schema:
+                $ref: 'OrganizationService.yaml#/components/schemas/Error'
+  /orgmanager/acquise/{acquirer-id}/{acquired-id}:
+    post:
+      summary: Implements the takeover of one organization by another without laying off employees
+      tags:
+        - Orgmanager
+      parameters:
+        - name: acquirer-id
+          in: path
+          description: Id of the acquirer organization
+          required: true
+          schema:
+            type: integer
+            format: int64
+            nullable: false
+            minimum: 1
+            example: 1
+        - name: acquired-id
+          in: path
+          description: Id of the acquired organization
+          required: true
+          schema:
+            type: integer
+            format: int64
+            nullable: false
+            minimum: 1
+            example: 1
+      responses:
+        '204':
+          description: Succesfull implement the takeover of one organization by another without laying off employees
+        '400':
+          description: Invalid param(s) supplied
+          content:
+            applicaiton/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid param(s) supplied
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '404':
+          description: Not found organization(s) by param(s) id error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 404
+                  message:
+                    type: string
+                    example: Not found organization(s) by id(s) error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 500
+                  message:
+                    type: string
+                    example: Internal server error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error code, message and time case of error
+          content:
+            application/json:
+              schema:
+                $ref: 'OrganizationService.yaml#/components/schemas/Error'
