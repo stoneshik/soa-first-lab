@@ -1,0 +1,772 @@
+openapi: 3.0.3
+info:
+  title: Organizations registry service REST endpoints
+  description: Organizations registry service REST endpoints for SOA first lab
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:335159/api/v1'
+paths:
+  # CRUD operations
+  /registry/organizations/:
+    post:
+      summary: Add new organization
+      operationId: addOrganization
+      tags:
+        - Registry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationAllFieldsSchema'
+      responses:
+        '200':
+          description: Add new organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAllFieldsSchema'
+        '400':
+          description: Used organization id has been entered error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 400
+                  message:
+                    type: string
+                    example: Organization cannot be created because the used id was entered
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '405':
+          description: Validation exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 405
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                      example: Organization field annualTurnover less than 1
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 500
+                  message:
+                    type: string
+                    example: Internal server error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error code, message and time case of error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Get list of organizations
+      description: Get list of organizations with sorting and pagination
+      operationId: getOrganizations
+      parameters:
+        - name: sort
+          in: query
+          description: Array of fields that are used for sorting. The "-" sign means sorting in descending order. Without "-" sign means sorting in ascending order. If ascdending and descending order are provided for one field (with and without "-"), an error response will be returned
+          required: false
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              default: id
+              enum:
+                - id
+                - name
+                - coordinates.x
+                - coordinates.y
+                - creationDate
+                - annualTurnover
+                - employeesCount
+                - type
+                - officialAddress.zipCode
+                - -id
+                - -name
+                - -coordinates.x
+                - -coordinates.y
+                - -creationDate
+                - -annualTurnover
+                - -employeesCount
+                - -type
+                - -officialAddress.zipCode
+        - name: filter
+          in: query
+          required: false
+          description: Array of fields used for filtering. Each element must contain the name of the field and the filtering method in parentheses, as well as the value that will be used for filtering. If the value type is incorrect, an error response will be returned
+          style: deepObject
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              example: id[eq]=1
+              pattern: '^(id|name|coordinates\.x|coordinates\.y|creationDate|annualTurnover|employeesCount|type|officialAddress\.zipCode)\[(eq|ne|gt|lt|lte|gte)\]=.+$'
+        - name: page
+          in: query
+          required: false
+          description: Specifies the page number to be paginated. If used without the "pageSize" parameter, the page size will be 20. If none of the parameters "page" or "pageSize" is used, then all Organizations will be returned
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: pageSize
+          in: query
+          required: false
+          description: Specified page size for pagination. If used without the "page" parameter, the first page will be displayed. If none of the parameters "page" or "pageSize" is used, then all Organizations will be returned
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Successfull returns an array of organizations based on passed parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationsAllFieldsSchema'
+        '400':
+          description: Invalid param(s) supplied
+          content:
+            applicaiton/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid param(s) supplied
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 500
+                  message:
+                    type: string
+                    example: Internal server error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error code, message and time case of error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /registry/organizations/{id}:
+    get:
+      summary: Get existing organization by id
+      description: Get existing organization by id
+      operationId: getOrganization
+      parameters:
+        - name: id
+          in: path
+          description: Organization id for find
+          required: true
+          schema:
+            type: integer
+            format: int64
+            nullable: false
+            minimum: 1
+            example: 1
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Successfull returns organization by id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAllFieldsSchema'
+        '400':
+          description: Invalid param supplied
+          content:
+            applicaiton/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid param supplied
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '404':
+          description: Not found organization by param id error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 404
+                  message:
+                    type: string
+                    example: Not found organization by id error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 500
+                  message:
+                    type: string
+                    example: Internal server error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error code, message and time case of error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update existing organization by id
+      description: Update existing organization by id
+      operationId: updateOrganization
+      parameters:
+        - name: id
+          in: path
+          description: Organization id to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+            nullable: false
+            minimum: 1
+            example: 1
+      tags:
+        - Registry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationAllFieldsSchema'
+      responses:
+        '200':
+          description: Successfull returns an updated organization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAllFieldsSchema'
+        '405':
+          description: Validation exception
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 405
+                  messages:
+                    type: array
+                    items:
+                      type: string
+                      example: Organization field annualTurnover less than 1
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 500
+                  message:
+                    type: string
+                    example: Internal server error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error code, message and time case of error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete existing organization by id
+      description: Delete existing organization by id
+      operationId: deleteOrganization
+      parameters:
+        - name: id
+          in: path
+          description: Organization id for delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+            nullable: false
+            minimum: 1
+      tags:
+        - Registry
+      responses:
+        '204':
+          description: Organization was sussesfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 204
+                  message:
+                    type: string
+                    example: Organization was sussesfully deleted
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '404':
+          description: Not found organization by param id error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 404
+                  message:
+                    type: string
+                    example: Not found organization by id error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 500
+                  message:
+                    type: string
+                    example: Internal server error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error code, message and time case of error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  # Additional operations
+  /registry/organizations/amount/official-address/equal/officialAddress/zip-code/{zipCode}:
+    get:
+      summary: Get amount organizations which field officialAddress value is equal to the specified one
+      description: Get amount organizations which field officialAddress value is equal to the specified one
+      operationId: getOfficialAddressAmountWhichOfficialAddressFieldValueEqual
+      parameters:
+        - name: zipCode
+          in: path
+          description: Organization officialAddress.zipCode for getting amount
+          required: true
+          schema:
+            type: string
+            nullable: true
+            maxLength: 15
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Successfull returns amount organizations which field officialAddress value is equal to the specified one
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+                nullable: false
+                minimum: 0
+                example: 2
+        '400':
+          description: Invalid param supplied
+          content:
+            applicaiton/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid param supplied
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 500
+                  message:
+                    type: string
+                    example: Internal server error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error code, message and time case of error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /registry/organizations/amount/annual-turnover/greater-than/{annualTurnover}:
+    get:
+      summary: Get amount organizations which field annualTurnover value is greater than the specified one
+      description: Get amount organizations which field annualTurnover value is greater than the specified one
+      operationId: getAnnualTurnoverAmountWhichAnnualTurnoverFieldValueGreaterThan
+      parameters:
+        - name: annualTurnover
+          in: path
+          description: Organization annualTurnover for getting amount
+          required: true
+          schema:
+            type: integer
+            format: int32
+            nullable: false
+            exclusiveMinimum: true
+            minimum: 0
+            example: 1
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Successfull returns amount organizations which field annualTurnover value is greater than the specified one
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+                nullable: false
+                minimum: 0
+                example: 2
+        '400':
+          description: Invalid param supplied
+          content:
+            applicaiton/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid param supplied
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 500
+                  message:
+                    type: string
+                    example: Internal server error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error code, message and time case of error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /registry/organizations/unique-field-array/employees-count:
+    get:
+      summary: Get array of unique values for employeesCount field
+      description: Get array of unique values for employeesCount field
+      operationId: getUniqueFieldArrayEmployeesCount
+      tags:
+        - Registry
+      responses:
+        '200':
+          description: Successfull returns array of unique values for employeesCount field
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                  format: int32
+                  nullable: false
+                  minimum: 1
+                  example: 1
+        '400':
+          description: Invalid param supplied
+          content:
+            applicaiton/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 400
+                  message:
+                    type: string
+                    example: Invalid param supplied
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 500
+                  message:
+                    type: string
+                    example: Internal server error
+                  time:
+                    type: string
+                    format: date-time
+                    example: 2024-11-10T00:10:12Z
+        default:
+          description: Returns error code, message and time case of error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+# Models
+components:
+  schemas:
+    OrganizationType:
+      type: string
+      nullable: false
+      example: COMMERCIAL
+      enum:
+        - COMMERCIAL
+        - PUBLIC
+        - TRUST
+        - PRIVATE_LIMITED_COMPANY
+    Address:
+      type: object
+      nullable: true
+      properties:
+        zipCode:
+          type: string
+          nullable: true
+          maxLength: 15
+    Coordinates:
+      type: object
+      nullable: false
+      properties:
+        x:
+          type: integer
+          format: int64
+          nullable: false
+          exclusiveMinimum: true
+          minimum: -195
+          example: 3
+        y:
+          type: number
+          format: float
+          nullable: false
+          maximum: 689
+          example: 1
+      required:
+        - x
+        - y
+    OrganizationAllFieldsSchema:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 0
+          exclusiveMinimum: true
+          nullable: false
+          example: 1
+          description: unique identifier for organization
+        name:
+          type: string
+          nullable: false
+          minLength: 1
+          example: Organization
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        creationDate:
+          type: string
+          format: date-time
+          nullable: false
+          example: 2024-11-10
+        annualTurnover:
+          type: integer
+          format: int32
+          nullable: false
+          exclusiveMinimum: true
+          minimum: 0
+          example: 1
+        employeesCount:
+          type: integer
+          format: int32
+          nullable: false
+          minimum: 1
+          example: 1
+        type:
+          $ref: '#/components/schemas/OrganizationType'
+        officialAddress:
+          $ref: '#/components/schemas/Address'
+      required:
+        - id
+        - name
+        - coordinates
+        - creationDate
+        - annualTurnover
+        - employeesCount
+        - type
+    OrganizationsAllFieldsSchema:
+      type: object
+      properties:
+        organizationGetResponseDtos:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationAllFieldsSchema'
+        page:
+          type: integer
+          minimum: 0
+          default: null
+        pageSize:
+          type: integer
+          minimum: 0
+          default: null
+        totalPages:
+          type: integer
+          minimum: 0
+          default: null
+        totalAmount:
+          type: integer
+          minimum: 0
+          default: null
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          example: 404
+        message:
+          type: string
+          example: Not Found
+        time:
+          type: string
+          format: date-time
+          example: 2024-11-10T00:10:12Z
+      required:
+        - code
+        - message
+        - time
